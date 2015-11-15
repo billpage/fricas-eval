@@ -1,3 +1,11 @@
+Modification of FriCAS to enable partial evaulation of types.
+
+Bill Page.
+
+
+Based on:
+----
+
 This is FriCAS computer algebra system.  FriCAS is a fork of Axiom.
 
 For installation instruction see INSTALL.

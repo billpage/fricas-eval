@@ -51,6 +51,7 @@ evalType(t) == EVAL(quoteNontypeArgs(t))
 
 $noEvalTypeMsg := nil
 $evalDomain := nil
+$param := nil
 
 evalDomain form ==
   if $evalDomain then
@@ -112,10 +113,15 @@ evaluateType form ==
     form' := mkAtree form
     bottomUp form'
     objVal getValue(form')
+  SAY("debug: evaluateType form: ",form, " $param: ",$param)
+  -- parameters
+  form in $param => form
   form is [op,:argl] =>
     op='CATEGORY =>
       argl is [x,:sigs] => [op,x,:[evaluateSignature(s) for s in sigs]]
       form
+    op='Category => form
+    op='Type => form
     op in '(Join Mapping) =>
       [op,:[evaluateType arg for arg in argl]]
     op='Union  =>
@@ -129,7 +135,11 @@ evaluateType form ==
   constructor? form =>
     ATOM form => evaluateType [form]
     throwEvalTypeMsg("S2IE0003",[form,form])
+    -- Although %1b is the name of a constructor, a full type must be specified
+    -- in the context you have used it.  Issue %b )show %2 %d for more
+    -- information.
   throwEvalTypeMsg("S2IE0004", [form])
+  -- %1bp is not a valid type.
 
 ++ `form' used in a context where a type (domain or category) is
 ++ expected.  Attempt to fully evaluate it.  Error if the resulting
@@ -142,31 +152,47 @@ evaluateFormAsType form ==
   bottomUp t is [m] and (m = ["Mode"] or isCategoryForm(m,$e)) =>
     objVal getValue t
   throwEvalTypeMsg("S2IE0004",[form])
+  --  %1bp is not a valid type.
 
 evaluateType1 form ==
   --evaluates the arguments passed to a constructor
+  SAY("Debug: evaluateType1 form: ", form)
   [op,:argl]:= form
   constructor? op =>
     null (sig := getConstructorSignature form) =>
+       --  You cannot now use %1bp in the context you have it.
        throwEvalTypeMsg("S2IE0005",[form])
     [.,:ml] := sig
     ml := replaceSharps(ml,form)
     # argl ~= #ml => throwEvalTypeMsg("S2IE0003",[form,form])
+    -- Although %1b is the name of a constructor, a full type must be specified
+    -- in the context you have used it.  Issue %b )show %2 %d for more
+    -- information.
     for x in argl for m in ml for argnum in 1.. repeat
+      SAY("debug: evaluateType1 x: ",x, " m: ", m)
       typeList := [v,:typeList] where v ==
+        -- do not try to evaluate parameters
+        x in $param or x = '_$ => x
+        x is [xop,:xargs] and or/[(xarg in $param or xarg = '_$) for xarg in xargs] => x
         categoryForm?(m) =>
           m := evaluateType MSUBSTQ(x,'_$,m)
           evalCategory(x' := (evaluateType x), m) => x'
           throwEvalTypeMsg("S2IE0004",[form])
+          --  %1bp is not a valid type.
+        SAY("debug: evaluateType1 domain m: ",m)
         m := evaluateType m
         GETDATABASE(opOf m,'CONSTRUCTORKIND) = 'domain and
             (tree := mkAtree x) and  putTarget(tree,m) and ((bottomUp tree) is [m1]) =>
                 [zt,:zv]:= z1:= getAndEvalConstructorArgument tree
-                (v1 := coerceOrRetract(z1, m)) => objValUnwrap v1
+                SAY("debug: evaluateType1 z1: ", z1, " m: ",m, " m1: ",m1)
+                (v1 := coerceOrRetract(z1, m)) => MKQ objValUnwrap v1
                 throwKeyedMsgCannotCoerceWithValue(zv,zt,m)
+        SAY("wtf2?")
         throwEvalTypeMsg("S2IE0006",[makeOrdinal argnum,m,form])
+        --  Cannot convert the %1 argument of %3p to the type %2p .
     [op,:NREVERSE typeList]
   throwEvalTypeMsg("S2IE0007",[op])
+  --  Category, domain or package constructor %1b is not available.
 
 throwEvalTypeMsg(msg, args) ==
   $justUnparseType : local := true
@@ -177,6 +203,7 @@ makeOrdinal i ==
   ('(first second third fourth fifth sixth seventh eighth ninth tenth)).(i-1)
 
 evaluateSignature sig ==
+  SAY("debug: evaluateSignature sig: ",sig)
   -- calls evaluateType on a signature
   sig is [ ='SIGNATURE,fun,sigl] =>
     ['SIGNATURE,fun,

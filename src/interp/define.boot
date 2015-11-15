@@ -40,6 +40,7 @@ compDefine(form,m,e) ==
   result
 
 compDefine1(form,m,e) ==
+  SAY("debug: compDefine1 form: ", form, " $insideCapsuleFunctionIfTrue: ", $insideCapsuleFunctionIfTrue, " $insideCategoryIfTrue: ", $insideCategoryIfTrue, " $insideFunctorIfTrue: ",$insideFunctorIfTrue, " $insideCategoryPackageIfTrue: ",$insideCategoryPackageIfTrue, " $insideExpressionIfTrue: ",$insideExpressionIfTrue, " $insideWhereIfTrue: ",$insideWhereIfTrue)
   $insideExpressionIfTrue: local:= false
   --1. decompose after macro-expanding form
   ['DEF,lhs,signature,specialCases,rhs]:= form:= macroExpand(form,e)
@@ -52,6 +53,23 @@ compDefine1(form,m,e) ==
   $insideCapsuleFunctionIfTrue =>
       compInternalFunction(form, m, e)
   if signature.target=$Category then $insideCategoryIfTrue:= true
+
+  if not $insideCategoryPackageIfTrue and not $insideFunctorIfTrue and not $bootStrapMode then
+    -- evaluate signature
+    SAY("debug: compDefine1 lhs: ", lhs)
+    -- parameters
+    $param := rest lhs
+    -- $SL := NIL
+    --for arg in $param for dom in rest signature repeat
+    --  SAY("debug: compDefine1 augmentSub arg: ", arg, " dom: ", dom)
+    --  $SL:=augmentSub(arg, dom, $SL)
+    --SAY("debug: compDefine1 $SL: ",$SL)
+    SAY(" signature (pre-evaluate): ", signature)
+    $genValue:local := false
+    signature := [(null sig => NIL;evaluateType sig) for sig in signature]
+    --$param := []
+    SAY("debug: compDefine1 signature (post evaluate): ", signature)
+    --form := ['DEF,lhs,signature,specialCases,rhs]
 
 -- RDJ (11/83): when argument and return types are all declared,
 --  or arguments have types declared in the environment,

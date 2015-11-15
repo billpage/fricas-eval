@@ -75,6 +75,7 @@ packageForm? d ==
 
 categoryForm? c ==
   op := opOf c
+  op = 'Type => true
   MEMQ(op, $CategoryNames) => true
   GETDATABASE(op,'CONSTRUCTORKIND) = 'category => true
   nil

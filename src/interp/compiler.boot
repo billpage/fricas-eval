@@ -753,6 +753,7 @@ compConstruct(form is ["construct",:l],m,e) ==
 
 compQuote(expr is [QUOTE, e1], m, e) ==
   SYMBOLP(e1) => [expr, ["Symbol"], e]
+  LISTP(e1) => [expr, ["List"], e]
   stackAndThrow ["Strange argument to QUOTE", expr]
   -- [expr,m,e]
 

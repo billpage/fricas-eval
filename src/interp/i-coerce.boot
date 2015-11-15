@@ -1372,7 +1372,7 @@ coerceByFunction(T,m2) ==
     [fn,:d]:= fun
     fn = function Undef => NIL
     isWrapped x =>
-      val := CATCH('coerceFailure, SPADCALL(unwrap x,fun))
+      val := CATCH('coerceFailure, SPADCALL(removeQuote unwrap x,fun))
       (val = $coerceFailure) => NIL
       objNewWrap(val,m2)
     env := fun

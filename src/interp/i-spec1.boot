@@ -1248,6 +1248,7 @@ isDomainValuedVariable form ==
 
 evalCategory(d,c) ==
   -- tests whether domain d has category c
+  SAY("debug: evalCategory d: ", d, " c: ",c)
   isPartialMode d or ofCategory(d,c)
 
 isOkInterpMode m ==

@@ -214,6 +214,7 @@ bottomUp t ==
   -- As a side-effect it also evaluates the tree.
   t is [op,:argl] =>
     tar := getTarget op
+    SAY("debug: bottomUp tar: ", tar) 
     getUnname(op) ~= $immediateDataSymbol and (v := getValue op) =>
       om := objMode(v)
       null tar => [om]
@@ -280,6 +281,7 @@ bottomUp t ==
         ms
     ms
   m := getBasicMode t => [m]
+  SAY("debug: bottomUp getBasicMode: ",m)
   IDENTP (id := getUnname t) =>
     putModeSet(t,bottomUpIdentifier(t,id))
   keyedSystemError("S2GE0016",['"bottomUp",'"unknown object form"])

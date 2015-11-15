@@ -1404,6 +1404,12 @@ hasCateSpecial(v,dom,cat,SL) ==
   -- v is a pattern variable, dom it's binding under $Subst
   -- tries to change dom, so that it has category cat under SL
   -- the result is a substitution list or 'failed
+  dom is ['FactoredForm,arg] =>
+    if isSubDomain(arg,$Integer) then arg := $Integer
+    d := ['FactoredRing,arg]
+    SL:= hasCate(arg,'(Ring),augmentSub(v,d,SL))
+    SL = 'failed => 'failed
+    hasCaty(d,cat,SL)
   EQCAR(cat,'Field) or EQCAR(cat, 'DivisionRing) =>
     if isSubDomain(dom,$Integer) then dom := $Integer
     d:= [$QuotientField, dom]
@@ -1472,6 +1478,12 @@ hasCaty(d,cat,SL) ==
   -- 1. T, NIL or a (has x1 x2) condition, if cat is not parameterized
   -- 2. a list of pairs (argument to cat,condition) otherwise
   -- then the substitution SL is augmented, or the result is 'failed
+  --SAY("debug: hasCaty d: ",d, " cat: ", cat, " SL: ",SL)
+  cat is ['Type] => true
+  -- If d is a param then maybe replace d with type of d ???  WSP
+  -- The following is a hack:
+  d in $param => true
+  -- debug: break();
   cat is ['CATEGORY,.,:y] => hasAttSig(d,subCopy(y,constructSubst d),SL)
   cat is ['SIGNATURE,foo,sig] =>
     hasSig(d,foo,subCopy(sig,constructSubst d),SL)
@@ -1669,6 +1681,7 @@ unifyStructVar(v,s,SL) ==
   augmentSub(v,s,SL)
 
 ofCategory(dom,cat) ==
+  SAY("debug: ofCategory dom: ", dom, " cat: ",cat)
   -- entry point to category evaluation from other points than type
   --   analysis
   -- the result is true or NIL

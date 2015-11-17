@@ -417,6 +417,9 @@ form2String1 u ==
   op = 'construct =>
     concat(lbrkSch(),
            tuple2String [form2String1 x for x in argl],rbrkSch())
+  op = 'QUOTE =>
+    concat(lbrkSch(),
+           tuple2String first argl,rbrkSch())
   op = "SEGMENT" =>
     null argl => '".."
     lo := form2String1 first argl
